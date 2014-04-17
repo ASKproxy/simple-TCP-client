@@ -1,0 +1,13 @@
+README
+
+The functions used are : 
+
+makeAuthenticate()
+	The client program will initially send a message to the server that contains the data "AUTH secretpassword\n". This is done in this function.
+
+clientAuthenticate()
+	 Upon receiving the reply from the server, the client will parse the reply for the new port number on the server and the password. The client will then create a new connection with the server and then send the message "AUTH networks". The reply from the server is then parsed for the epoch time and the measurement. 
+
+displayResult()
+	The epoch time and the measurement are converted to human readable form and printed in this function.
+

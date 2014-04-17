@@ -1,0 +1,165 @@
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<sys/socket.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
+#include<string.h>
+#include<sys/types.h>
+#include<ctype.h>
+#include<netdb.h>
+
+#define MAX_LENGTH 4096
+#define MAX_PASSWORD_LENGTH 50;
+int main()
+{
+
+  //store the users choice
+  int choice;
+  
+  //the message that we pass to the server
+  char prompt1[]="AUTH secretpassword";
+  char prompt2[]="AUTH network";
+
+  char closeprompt1[]="CLOSE";
+
+  //hard-code the IP address and port of the server
+  char serverIP[]="129.170.213.101";
+  int serverPort=47789;
+  //define the sockid and the serveraddr
+  int sockid;
+  struct sockaddr_in serveraddress;
+  
+  int connectionid;
+  //CREATE the socket 
+ //the AF_INET parameter indicates that its IPv4
+  sockid=socket(AF_INET, SOCK_STREAM,0);
+  if(sockid<0)
+    {
+      perror("the socket wasn't created properly!!");
+    }
+
+  //clear the serveraddress and set the values
+  memset(&serveraddress,0,sizeof(serveraddress));
+  serveraddress.sin_family=AF_INET;
+  serveraddress.sin_addr.s_addr=inet_addr(serverIP);
+  serveraddress.sin_port=htons(serverPort);
+
+  connectionid=connect(sockid,(struct sockaddr *)&serveraddress,sizeof(serveraddress));
+  if(connectionid<0)
+    {
+      perror("The client couldn't connect to the server!!");
+      exit(1);
+    }
+
+  char sendbuffer[50];
+  char recievebuffer[4096];
+  memset(sendbuffer,0,sizeof(sendbuffer));
+  sprintf(sendbuffer,"%s\n",prompt1);  
+  send(sockid,sendbuffer,strlen(sendbuffer),0);                                                                                                                                                         
+  recv(sockid,recievebuffer,4096,0);            
+  fputs(recievebuffer,stdout);
+
+
+  int i;
+  char *str;
+  //Parse the values in the returned string
+  char **info;
+  info=malloc(sizeof(char)*4);
+  for(i=0;i<4;i++)
+    {
+      info[i]=(char *)malloc(sizeof(char)*MAX_LENGTH);
+    }
+  i=0;
+  char *r=recievebuffer;
+  while((str=strtok(r," "))!=NULL)
+    {
+      sprintf(info[i],"%s",str);
+      r=NULL;
+      i++;
+    }
+  
+  struct hostent *getname;
+  getname=gethostbyname(info[1]);
+  printf("\n%s\n",getname->h_name);
+  /*  //get the password from the returned value
+  char server_password[MAX_PASSWORD_LENGTH];
+  strcpy(server_password,info[2]);
+  
+  //get the port number from the returned value
+  char *newPort=malloc(sizeof(char)*6);
+  strcpy(newPort,info[3]);
+
+  //create the password to be sent to the server 
+  sprintf(sendbuffer,"AUTH %s\n",newPort);
+
+  //retrieve the next number which is the port number
+  /*
+  sprintf(sendbuffer,"%s\n",prompt2);
+  send(sockid,sendbuffer,strlen(sendbuffer),0);
+  recv(sockid,recievebuffer,4096,0);
+  fputs(recievebuffer,stdout);
+  */
+  /* 
+
+  while(1) 
+    {
+      printf("\nEnter choice : ");
+      scanf("%d",&choice);
+      //send the secret password message
+      sprintf(sendbuffer,"%s\n",prompt1);
+      send(sockid,sendbuffer,strlen(sendbuffer),0);
+      recv(sockid,recievebuffer,4096,0);
+      memset(sendbuffer,0,strlen(sendbuffer));
+      memset(recievebuffer,0,strlen(recievebuffer));
+
+      //send the network message 
+      sprintf(sendbuffer,"%s\n",prompt2);
+      send(sockid,sendbuffer,strlen(sendbuffer),0);
+      recv(sockid,recievebuffer,4096,0);
+      memset(sendbuffer,0,strlen(sendbuffer));
+      memset(recievebuffer,0,strlen(recievebuffer));
+      
+      //set this and convert it later.
+      char *date=malloc(sizeof(char)*30);;
+      memset(date,'\0',50);
+      char *value=malloc(sizeof(char)*30);;
+      memset(value,'\0',30);
+      //check the choice
+      switch(choice)
+	{
+	case 1:
+	  {
+	    char chosen[]="WATER TEMPERATURE";
+	    sprintf(sendbuffer,"%s\n",chosen);
+	    send(sockid,sendbuffer,strlen(sendbuffer),0);
+	    recv(sockid,recievebuffer,4096,0);
+	    //seperate the date and temp by the space between them
+	    char *pos;
+	    
+	    //copy the first half up until the space
+	    while(isalnum(*pos)!=0)
+	      {
+		sprintf(date+strlen(date),"%c",*pos);
+		pos++;
+	      }
+	    pos++;
+	    //copy the second half of the reply
+	    while(isalnum(*pos)!=0)
+	      {
+		sprintf(value+strlen(value),"%c",*pos);
+		pos++;
+	      }
+	    
+	    
+	    fputs(value,stdout);
+	    fputs(date,stdout);
+	    break;
+	  }
+	}
+     
+	}*/
+  exit(0);
+}
+  
+  
